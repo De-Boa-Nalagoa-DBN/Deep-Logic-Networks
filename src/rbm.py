@@ -41,8 +41,8 @@ class RBM:
         # resample the hidden activation
         self.h1 = tf.nn.sigmoid(tf.matmul(self.v1, self.W) + self.hb)
 
-    def constrative_divergence(self, epochs=5, batch_size=100, train_data=None):
-        alpha = 0.995
+    def constrative_divergence(self):
+        alpha = 0.9
 
         self.foward_pass()
         # reconstruct the foward pass
@@ -59,15 +59,18 @@ class RBM:
         self.update_hb = self.hb + alpha * tf.reduce_mean(self.h0 - self.h1, 0)
 
     def train(self, epochs=5, batchsize=100, data_train=None):
-        err = tf.reduce_mean(tf.square(self.X - self.v1))
         weights = []
         errors = []
         sess = tf.Session()
         init = tf.global_variables_initializer()
         sess.run(init)
 
+        # print(sess.run(err, feed_dict={
+        #       self.X: data_train, self.W: self.prev_w, self.vb: self.prev_vb, self.hb: self.prev_hb}))
+
         for epoch in range(epochs):
             self.constrative_divergence()
+            err = tf.reduce_mean(tf.square(self.X - self.v1))
             for start, end in zip(range(0, len(data_train), batchsize), range(batchsize, len(data_train), batchsize)):
                 batch = data_train[start:end]
                 self.cur_w = sess.run(self.update_w, feed_dict={
@@ -86,14 +89,12 @@ class RBM:
                     weights.append(self.cur_w)
             print('Epoch: %d' % epoch, 'reconstruction error: %f' % errors[-1])
 
-        plt.plot(errors)
-        plt.xlabel("Batch Number")
-        plt.ylabel("Error")
-        plt.show()
 
 def main():
     mnist = input_data.read_data_sets('MNIST_data/', one_hot=True)
     train_X, train_Y, test_X, test_Y = mnist.train.images, mnist.train.labels, mnist.test.images, mnist.test.labels
+    rbm = RBM()
+    rbm.train(data_train=train_X)
 
 
 if __name__ == '__main__':
