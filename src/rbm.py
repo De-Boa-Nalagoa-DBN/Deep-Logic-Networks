@@ -4,8 +4,6 @@ import tensorflow as tf
 
 class RBM:
 
-    _h0 = _v1 = h0 = v1 = h1 = update_w = update_vb = update_hb = None
-
     # initializating visible and hidden biases, weights and the input matrixes
     def __init__(self, input_size, output_size):
         self._input_size = input_size
@@ -15,14 +13,14 @@ class RBM:
         self.hb = np.zeros([output_size], np.float32)
         self.vb = np.zeros([input_size], np.float32)
 
-    def foward_pass(self, x, w, hb):
+    def foward_pass(self, visible, w, hb):
         # hidden units' probabilities
-        return tf.nn.sigmoid(tf.matmul(x, w) + hb)
+        return tf.nn.sigmoid(tf.matmul(visible, w) + hb)
 
     def sample_prob(self, probs):
         # sample h given an input
         return tf.nn.relu(
-            tf.sign(probs + tf.random_uniform(tf.shape(probs))))
+            tf.sign(probs - tf.random_uniform(tf.shape(probs))))
 
     def backward_pass(self, hidden, w, vb):
         # visible units' probabilities
@@ -91,9 +89,9 @@ class RBM:
                 self.hb = prev_hb
                 self.vb = prev_vb
                 #while testing:
-                # error = (sess.run(err, feed_dict={
-                #     v0: data_train, _w: cur_w, _vb: cur_vb, _hb: cur_hb}))
-                #print('Epoch: %d' % epoch, 'reconstruction error: %f' % error)
+                error = (sess.run(err, feed_dict={
+                    v0: data_train, _w: cur_w, _vb: cur_vb, _hb: cur_hb}))
+                print('Epoch: %d' % epoch, 'reconstruction error: %f' % error)
 
     def rbm_output(self, X):
         input_X = tf.constant(X)
