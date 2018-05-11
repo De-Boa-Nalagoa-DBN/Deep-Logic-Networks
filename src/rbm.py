@@ -1,5 +1,10 @@
+import math
+
 import numpy as np
 import tensorflow as tf
+from PIL import Image
+
+from utils import tile_raster_images
 
 
 class RBM:
@@ -89,9 +94,9 @@ class RBM:
                 self.hb = prev_hb
                 self.vb = prev_vb
                 #while testing:
-                error = (sess.run(err, feed_dict={
-                    v0: data_train, _w: cur_w, _vb: cur_vb, _hb: cur_hb}))
-                print('Epoch: %d' % epoch, 'reconstruction error: %f' % error)
+                # error = (sess.run(err, feed_dict={
+                #     v0: data_train, _w: cur_w, _vb: cur_vb, _hb: cur_hb}))
+                # print('Epoch: %d' % epoch, 'reconstruction error: %f' % error)
 
     def rbm_output(self, X):
         input_X = tf.constant(X)
