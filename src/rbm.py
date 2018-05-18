@@ -14,7 +14,7 @@ class RBM:
         self._input_size = input_size
         self._output_size = output_size
         # Initializing weights and biases as matrices full of zeroes
-        self.W = np.zeros([input_size, output_size], np.float32)
+        self.w = np.zeros([input_size, output_size], np.float32)
         self.hb = np.zeros([output_size], np.float32)
         self.vb = np.zeros([input_size], np.float32)
 
