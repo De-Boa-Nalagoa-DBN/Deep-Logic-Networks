@@ -2,10 +2,13 @@ import math
 
 import numpy as np
 import tensorflow as tf
+from tensorflow.examples.tutorials.mnist import input_data
 from PIL import Image
 
 from utils import tile_raster_images
 
+HIDDEN_UNITS    = [500, 1000]
+SAVE_DIR        = "trained/" 
 
 class RBM:
 
@@ -14,9 +17,44 @@ class RBM:
         self._input_size = input_size
         self._output_size = output_size
         # Initializing weights and biases as matrices full of zeroes
-        self.W = np.zeros([input_size, output_size], np.float32)
+        self.w = np.zeros([input_size, output_size], np.float32)
         self.hb = np.zeros([output_size], np.float32)
         self.vb = np.zeros([input_size], np.float32)
+
+    def load_weights(self, dir):
+        print("Loading weights from {} ...".format(dir))
+        tmp_w = np.load(dir)
+        if tmp_w.shape != self.w.shape:
+            print("Error: Loaded weights shape: {}, expected shape: {}!".format(tmp_w.shape, self.w.shape))
+            return -1
+        else:
+            self.w = tmp_w
+            print("Weights loaded successfully!")
+
+    def load_biases(self, dir_vb, dir_hb):
+        print("Loading visible biases from {} ...".format(dir_vb))
+        print("Loading hidden biases from {} ...".format(dir_hb))
+        tmp_vb = np.load(dir_vb)
+        tmp_hb = np.load(dir_hb)
+        if tmp_vb.shape != self.vb.shape:
+            print("Error: Loaded visible biases shape: {}, expected shape: {}!".format(tmp_vb.shape, self.vb.shape))
+            return -1
+        if tmp_hb.shape != self.hb.shape:
+            print("Error: Loaded hidden biases shape: {}, expected shape: {}!".format(tmp_hb.shape, self.hb.shape))
+            return -1
+
+        self.vb = tmp_vb
+        self.hb = tmp_hb
+        print("Biases loaded successfully!")
+
+    def save_weights(self):
+        print("Saving weights in {} ...".format(SAVE_DIR))
+        np.save(SAVE_DIR + "rbm_weights.npy", self.w)
+
+    def save_biases(self):
+        print("Saving biases in {} ...".format(SAVE_DIR))
+        np.save(SAVE_DIR + "rbm_vb.npy", self.vb)
+        np.save(SAVE_DIR + "rbm_hb.npy", self.hb)
 
     def foward_pass(self, visible, w, hb):
         # hidden units' probabilities
@@ -32,7 +70,7 @@ class RBM:
         return tf.nn.sigmoid(
             tf.matmul(hidden, tf.transpose(w)) + vb)
 
-    def train(self, data_train=None, epochs=5, batchsize=100, learning_rate=1.0):
+    def train(self, data_train=None, epochs=5, batchsize=100, learning_rate=1.0, debug=False):
         # Create the placeholders for our parameters
         _w = tf.placeholder("float", [self._input_size, self._output_size])
         _hb = tf.placeholder("float", [self._output_size])
@@ -76,6 +114,7 @@ class RBM:
 
             init = tf.global_variables_initializer()
             sess.run(init)
+            error = None
 
             for epoch in range(epochs):
                 for start, end in zip(range(0, len(data_train), batchsize), range(batchsize, len(data_train), batchsize)):
@@ -90,13 +129,17 @@ class RBM:
                     prev_w = cur_w
                     prev_hb = cur_hb
                     prev_vb = cur_vb
+
+                    if start % 10000 == 0 and debug:
+                        error = (sess.run(err, feed_dict={
+                            v0: data_train, _w: cur_w, _vb: cur_vb, _hb: cur_hb}))
+                
+                if debug:
+                    print('Epoch: %d' % epoch, 'reconstruction error: %f' % error)
+
                 self.w = prev_w
                 self.hb = prev_hb
                 self.vb = prev_vb
-                #while testing:
-                # error = (sess.run(err, feed_dict={
-                #     v0: data_train, _w: cur_w, _vb: cur_vb, _hb: cur_hb}))
-                # print('Epoch: %d' % epoch, 'reconstruction error: %f' % error)
 
     def rbm_output(self, X):
         input_X = tf.constant(X)
@@ -106,3 +149,18 @@ class RBM:
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             return sess.run(out)
+
+def main():
+    mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+    trX, trY, teX, teY = mnist.train.images, mnist.train.labels, mnist.test.images,\
+        mnist.test.labels
+
+    rbm = RBM(trX.shape[1], HIDDEN_UNITS[0])
+    rbm.train(trX, debug=True)
+
+    # Saving weights and biases
+    rbm.save_weights()
+    rbm.save_biases()
+
+if __name__ == '__main__':
+    main()
