@@ -23,8 +23,6 @@ def rbm_extract(W):
             S[i][j] = np.sign(W[i][j])
             r[j].add_literal(W[i][j])
 
-        print(r[j].x)
-
         while cj != r[j].c:
             r[j].c = cj
             cj = get_condifence(W, S, j)
@@ -34,9 +32,7 @@ def rbm_extract(W):
                     r[j].remove_literal(i)
 
         r[j].c = cj
-
-    for rj in r:
-        print("{} : {} <-> {}".format(rj.c, rj.h, rj.x))
+        print("{} : {} <-> {}".format(r[j].c, r[j].h, r[j].x))
 
 def main():
     # TODO

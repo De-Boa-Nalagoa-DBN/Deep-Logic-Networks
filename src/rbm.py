@@ -135,7 +135,7 @@ class RBM:
                             v0: data_train, _w: cur_w, _vb: cur_vb, _hb: cur_hb}))
                 
                 if debug:
-                    print('Epoch: %d' % epoch, 'reconstruction error: %f' % error)
+                    print('Epoch: {}, reconstruction error: {}'.format(epoch, error))
 
                 self.w = prev_w
                 self.hb = prev_hb
