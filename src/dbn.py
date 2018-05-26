@@ -118,7 +118,7 @@ class DBN(object):
         _w = [None] * len(self.w_list)
         _b = [None] * len(self.b_list)
         _in[0] = tf.placeholder("float", [None, self._X.shape[1]])
-        
+
         # Initializing variables
         for i in range(len(self.w_list)):
             _w[i] = tf.constant(self.w_list[i])
@@ -126,8 +126,9 @@ class DBN(object):
 
         # Defining activation function
         for i in range(1, len(self._sizes) + 2):
-            _in[i] = tf.nn.sigmoid(tf.matmul(_in[i - 1], _w[i - 1]) + _b[i - 1])
-        
+            _in[i] = tf.nn.sigmoid(
+                tf.matmul(_in[i - 1], _w[i - 1]) + _b[i - 1])
+
         # Prediction operation
         predict_op = tf.argmax(_in[-1], 1)
 

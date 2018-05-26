@@ -1,5 +1,6 @@
 import math
 
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
@@ -7,8 +8,9 @@ from PIL import Image
 
 from utils import tile_raster_images
 
-HIDDEN_UNITS    = [500, 1000]
-SAVE_DIR        = "trained/" 
+HIDDEN_UNITS = [500, 1000]
+SAVE_DIR = "trained/"
+
 
 class RBM:
 
@@ -25,7 +27,8 @@ class RBM:
         print("Loading weights from {} ...".format(dir))
         tmp_w = np.load(dir)
         if tmp_w.shape != self.w.shape:
-            print("Error: Loaded weights shape: {}, expected shape: {}!".format(tmp_w.shape, self.w.shape))
+            print("Error: Loaded weights shape: {}, expected shape: {}!".format(
+                tmp_w.shape, self.w.shape))
             return -1
         else:
             self.w = tmp_w
@@ -37,10 +40,12 @@ class RBM:
         tmp_vb = np.load(dir_vb)
         tmp_hb = np.load(dir_hb)
         if tmp_vb.shape != self.vb.shape:
-            print("Error: Loaded visible biases shape: {}, expected shape: {}!".format(tmp_vb.shape, self.vb.shape))
+            print("Error: Loaded visible biases shape: {}, expected shape: {}!".format(
+                tmp_vb.shape, self.vb.shape))
             return -1
         if tmp_hb.shape != self.hb.shape:
-            print("Error: Loaded hidden biases shape: {}, expected shape: {}!".format(tmp_hb.shape, self.hb.shape))
+            print("Error: Loaded hidden biases shape: {}, expected shape: {}!".format(
+                tmp_hb.shape, self.hb.shape))
             return -1
 
         self.vb = tmp_vb
@@ -78,13 +83,14 @@ class RBM:
         v0 = tf.placeholder("float", [None, self._input_size])
 
         # initialize hidden and visible biases with 0
-        cur_w = np.zeros([self._input_size, self._output_size], np.float32)
-        cur_vb = np.zeros([self._input_size], np.float32)
-        cur_hb = np.zeros([self._output_size], np.float32)
 
-        prev_w = np.zeros([self._input_size, self._output_size], np.float32)
-        prev_vb = np.zeros([self._input_size], np.float32)
-        prev_hb = np.zeros([self._output_size], np.float32)
+        cur_w = np.random.rand(self._input_size, self._output_size)
+        cur_vb = np.random.rand(self._input_size)
+        cur_hb = np.random.rand(self._output_size)
+
+        prev_w = np.random.rand(self._input_size, self._output_size)
+        prev_vb = np.random.rand(self._input_size)
+        prev_hb = np.random.rand(self._output_size)
 
         # Sample the probabilities
         h0 = self.sample_prob(self.foward_pass(v0, _w, _hb))
@@ -133,7 +139,7 @@ class RBM:
                     if start % 10000 == 0 and debug:
                         error = (sess.run(err, feed_dict={
                             v0: data_train, _w: cur_w, _vb: cur_vb, _hb: cur_hb}))
-                
+
                 if debug:
                     print('Epoch: {}, reconstruction error: {}'.format(epoch, error))
 
@@ -141,26 +147,46 @@ class RBM:
                 self.hb = prev_hb
                 self.vb = prev_vb
 
-    def rbm_output(self, X):
+    def rbm_output(self, X, debug=False):
         input_X = tf.constant(X)
         _w = tf.constant(self.w)
         _hb = tf.constant(self.hb)
-        out = tf.nn.sigmoid(tf.matmul(input_X, _w) + _hb)
-        with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            return sess.run(out)
+        out = self.foward_pass(input_X, _w, _hb)
+        if not debug:
+            with tf.Session() as sess:
+                sess.run(tf.global_variables_initializer())
+                return sess.run(out)
+        else:
+            return out
+
 
 def main():
     mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
     trX, trY, teX, teY = mnist.train.images, mnist.train.labels, mnist.test.images,\
         mnist.test.labels
 
-    rbm = RBM(trX.shape[1], HIDDEN_UNITS[0])
-    rbm.train(trX, debug=True)
+    # trX = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]]
+    # trX = np.asarray(trX)
+    print(trX.shape[1])
+    rbm = RBM(trX.shape[1], 500)
+    rbm.train(trX, debug=False)
 
     # Saving weights and biases
     rbm.save_weights()
     rbm.save_biases()
+
+    out = rbm.rbm_output(trX[1:2], debug=True)
+    v1 = rbm.backward_pass(out, rbm.w, rbm.vb)
+    with tf.Session() as sess:
+        feed = sess.run(out)
+        out = sess.run(v1, feed_dict={out: feed})
+    img = Image.fromarray(tile_raster_images(X=out, img_shape=(
+        28, 28), tile_shape=(1, 1), tile_spacing=(1, 1)))
+    plt.rcParams['figure.figsize'] = (2.0, 2.0)
+    imgplot = plt.imshow(img)
+    imgplot.set_cmap('gray')
+    plt.show()
+
 
 if __name__ == '__main__':
     main()

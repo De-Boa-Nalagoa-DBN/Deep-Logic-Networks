@@ -5,7 +5,7 @@ from modified_rbm import RBM2
 from tensorflow.examples.tutorials.mnist import input_data
 
 def get_condifence(w, s, j):
-    num = 0 #np.sum(np.absolute(w.T[j]))
+    num = 0
     for i, n in enumerate(s.T[j]):
         if n != 0:
             num += abs(w.T[j][i])
@@ -14,13 +14,12 @@ def get_condifence(w, s, j):
 
     return c
 
+
 def rbm_extract(W):
     n_visible = W.shape[0]
     n_hidden = W.shape[1]
     S = np.zeros(W.shape)
     r = []
-
-    
 
     for j in range(n_hidden):
         print("Calculating confidence for hidden unit: {}".format(j))
@@ -37,13 +36,10 @@ def rbm_extract(W):
                 if cj >= (2*np.absolute(W[i][j])) and S[i][j] != 0:
                     S[i][j] = 0
                     r[j].remove_literal(i)
-
-        r[j].c = cj
-        #print("{} : {} <-> {}".format(r[j].c, r[j].h, r[j].x))
     return r
 
+
 def main():
-    # TODO
     print("Extract Knowledge")
     W = np.load("trained/rbm_weights.npy")
     rules_rbm = rbm_extract(W)
@@ -65,6 +61,7 @@ def main():
         for r in rules_rbm:
             rules_file.write("{} : {} <-> {}\n".format(r.c, r.h, r.x))
         rules_file.close()
+
 
 if __name__ == "__main__":
     main()
