@@ -4,6 +4,7 @@ from dbn import DBN
 import tensorflow as tf
 from rule import Rule
 
+# knowledgeBase [[Rule]]
 def ruleEncodingAlgorithm(knowledgeBase):
     network = []
 
