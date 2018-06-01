@@ -5,6 +5,7 @@ from PIL import Image
 from rbm import RBM
 from utils import tile_raster_images
 from tensorflow.examples.tutorials.mnist import input_data
+from modified_rbm import RBM2
 
 
 class DBN(object):
@@ -65,6 +66,19 @@ class DBN(object):
         # Load weights and biases
         for i in range(len(self._sizes)):
             self.w_list[i] = rbm_list[i].w
+            self.b_list[i] = rbm_list[i].hb
+
+    def load_from_rbms2(self, dbn_sizes, rbm_list):
+
+        # Check if sizes are correct
+        assert len(dbn_sizes) == len(
+            self._sizes), "Sizes passed on load_from_rbms are wrong"
+        for i in range(len(self._sizes)):
+            assert dbn_sizes[i] == self._sizes[i]
+
+        # Load weights and biases
+        for i in range(len(self._sizes)):
+            self.w_list[i] = rbm_list[i].wUp
             self.b_list[i] = rbm_list[i].hb
 
     def train(self):
@@ -136,6 +150,28 @@ class DBN(object):
             sess.run(tf.global_variables_initializer())
             return sess.run(predict_op, feed_dict={_in[0]: X})
 
+    def ruleEncodingAlgorithm(self, knowledgeBase):
+        inpX = self._X
+        rbm_list = []
+        input_size = inpX.shape[1]
+
+        # for each RBM we want to generate
+        for i, size in enumerate(self._sizes):
+            rbm = RBM2(input_size, size)
+            rbm.insertKnowledge(knowledgeBase[i])
+            rbm_list.append(rbm)
+            input_size = size
+
+        # for each RBM in our RBM's list
+        for i, rbm in enumerate(rbm_list):
+            print('\n\nRBM {}: '.format(i))
+            rbm.train(inpX)
+            inpX = rbm.rbm_output(inpX)
+
+        return rbm_list
+
+
+
 
 def main():
     # Loading in the mnist data
@@ -146,6 +182,14 @@ def main():
     dbn = DBN([500, 200, 50], trX, trY, epochs=15)
     dbn.load_from_rbms([500, 200, 50], dbn.train_rbms())
     dbn.train()
+    # TODO: FAZER ENCODE NA DBN
+
+    # DEPOIS DISSO DEVE FAZER:
+    # sizes = [len(knowledgeBase[i]) for i in len(knowledgeBase)]
+    # dbn = DBN(sizes, trX, trY, epochs=15)
+    # dbn.load_from_rbms2(sizes, dbn.ruleEncodingAlgorithm(knowledgeBase))
+    # dbn.train()
+
     print("Prediction for Mnist dataset with DBN without learning extraction and insertion:",
           np.mean(np.argmax(teY, axis=1) == dbn.predict(teX)))
 
