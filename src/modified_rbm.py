@@ -42,15 +42,15 @@ class RBM2:
         self.hb = tmp_hb
         print("Biases loaded successfully!")
 
-    def save_weights(self):
+    def save_weights(self, layer_n):
         print("Saving weights in {} ...".format(SAVE_DIR))
-        np.save(SAVE_DIR + "rbm_weightsDown.npy", self.wDown)
-        np.save(SAVE_DIR + "rbm_weightsUp.npy", self.wUp)
+        np.save(SAVE_DIR + "rbm_weightsDown_" + str(layer_n) +".npy", self.wDown)
+        np.save(SAVE_DIR + "rbm_weightsUp_" + str(layer_n) +".npy", self.wUp)
 
-    def save_biases(self):
+    def save_biases(self, layer_n):
         print("Saving biases in {} ...".format(SAVE_DIR))
-        np.save(SAVE_DIR + "rbm_vb.npy", self.vb)
-        np.save(SAVE_DIR + "rbm_hb.npy", self.hb)
+        np.save(SAVE_DIR + "rbm_vb_" + str(layer_n) +".npy", self.vb)
+        np.save(SAVE_DIR + "rbm_hb_" + str(layer_n) +".npy", self.hb)
 
     def foward_pass(self, visible, w, hb):
         # hidden units' probabilities
@@ -178,8 +178,8 @@ def main():
     rbm.train(trX, debug=True)
 
     # Saving weights and biases
-    rbm.save_weights()
-    rbm.save_biases()
+    rbm.save_weights(0)
+    rbm.save_biases(0)
 
 if __name__ == '__main__':
     main()
