@@ -164,18 +164,26 @@ def main():
     mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
     trX, trY, teX, teY = mnist.train.images, mnist.train.labels, mnist.test.images,\
         mnist.test.labels
-
+    
+    img = Image.fromarray(tile_raster_images(X=trX[1:2], img_shape=(
+        28, 28), tile_shape=(1, 1), tile_spacing=(1, 1)))
+    plt.rcParams['figure.figsize'] = (2.0, 2.0)
+    imgplot = plt.imshow(img)
+    imgplot.set_cmap('gray')
+    plt.show()
     # trX = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]]
     # trX = np.asarray(trX)
-    print(trX.shape[1])
+    # print(trX.shape[1])
     rbm = RBM(trX.shape[1], 500)
-    rbm.train(trX, debug=False)
+    rbm.train(trX, debug=True)
 
     # Saving weights and biases
     rbm.save_weights()
     rbm.save_biases()
 
     out = rbm.rbm_output(trX[1:2], debug=True)
+
+
     v1 = rbm.backward_pass(out, rbm.w, rbm.vb)
     with tf.Session() as sess:
         feed = sess.run(out)

@@ -79,13 +79,13 @@ class RBM2:
         # initialize hidden and visible biases with 0
         cur_wDown = np.zeros([self._input_size, self._output_size], np.float32)
         cur_wUp = np.zeros([self._input_size, self._output_size], np.float32)
-        cur_vb = np.zeros([self._input_size], np.float32)
-        cur_hb = np.zeros([self._output_size], np.float32)
+        cur_vb =  np.random.rand(self._input_size)
+        cur_hb = np.random.rand(self._output_size)
 
         prev_wUp = self.wUp
-        prev_wDown = np.zeros([self._input_size, self._output_size], np.float32)
-        prev_vb = np.zeros([self._input_size], np.float32)
-        prev_hb = np.zeros([self._output_size], np.float32)
+        prev_wDown = np.random.rand(self._input_size, self._output_size)
+        prev_vb =  np.random.rand(self._input_size)
+        prev_hb = np.random.rand(self._output_size)
 
         # Sample the probabilities
         h0 = self.sample_prob(self.foward_pass(v0, _wUp, _hb))
@@ -147,14 +147,17 @@ class RBM2:
                 self.hb = prev_hb
                 self.vb = prev_vb
 
-    def rbm_output(self, X):
+    def rbm_output(self, X, debug=False):
         input_X = tf.constant(X)
-        _w = tf.constant(self.wDown)
+        _w = tf.constant(self.wUp)
         _hb = tf.constant(self.hb)
-        out = tf.nn.sigmoid(tf.matmul(input_X, _w) + _hb)
-        with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            return sess.run(out)
+        out = self.foward_pass(input_X, _w, _hb)
+        if not debug:
+            with tf.Session() as sess:
+                sess.run(tf.global_variables_initializer())
+                return sess.run(out)
+        else:
+            return out
     
     def insertKnowledge(self, ruleSet):
         for i in range(len(ruleSet)):

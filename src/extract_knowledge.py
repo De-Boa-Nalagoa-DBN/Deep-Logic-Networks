@@ -2,6 +2,10 @@ import numpy as np
 from rbm import RBM
 from rule import Rule
 from modified_rbm import RBM2
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from utils import tile_raster_images
+from PIL import Image
 from tensorflow.examples.tutorials.mnist import input_data
 
 def get_condifence(w, s, j):
@@ -22,7 +26,7 @@ def rbm_extract(W):
     r = []
 
     for j in range(n_hidden):
-        print("Calculating confidence for hidden unit: {}".format(j))
+        # print("Calculating confidence for hidden unit: {}".format(j))
         cj = None
         r.append(Rule(j))
         for i in range(n_visible):
@@ -61,6 +65,20 @@ def main():
         for r in rules_rbm:
             rules_file.write("{} : {} <-> {}\n".format(r.c, r.h, r.x))
         rules_file.close()
+    
+        out = rbm.rbm_output(trX[1:2], debug=True)
+
+
+    v1 = rbm.backward_pass(out, rbm.wDown, rbm.vb)
+    with tf.Session() as sess:
+        feed = sess.run(out)
+        out = sess.run(v1, feed_dict={out: feed})
+    img = Image.fromarray(tile_raster_images(X=out, img_shape=(
+        28, 28), tile_shape=(1, 1), tile_spacing=(1, 1)))
+    plt.rcParams['figure.figsize'] = (2.0, 2.0)
+    imgplot = plt.imshow(img)
+    imgplot.set_cmap('gray')
+    plt.show()
 
 
 if __name__ == "__main__":
