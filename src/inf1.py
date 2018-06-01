@@ -1,2 +1,1 @@
-def inferenceRule():
-    
+def inferenceRule(rule):

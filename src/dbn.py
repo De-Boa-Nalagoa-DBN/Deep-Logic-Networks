@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import tensorflow as tf
-#from PIL import Image
+from PIL import Image
 from rbm import RBM
 from utils import tile_raster_images
 from tensorflow.examples.tutorials.mnist import input_data
