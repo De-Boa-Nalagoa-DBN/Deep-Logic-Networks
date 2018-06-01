@@ -21,6 +21,7 @@ class RBM2:
         self.wDown = np.zeros([output_size, input_size], np.float32)
         self.hb = np.zeros([output_size], np.float32)
         self.vb = np.zeros([input_size], np.float32)
+        self.multiplier = np.ones([input_size, output_size], np.float32)
 
     def load_weights(self, weights):
        pass
@@ -71,14 +72,17 @@ class RBM2:
         _wUp = tf.placeholder("float", [self._input_size, self._output_size])
         _hb = tf.placeholder("float", [self._output_size])
         _vb = tf.placeholder("float", [self._input_size])
+        _multiplier = tf.placeholder("float", [self._input_size, self._output_size])
         v0 = tf.placeholder("float", [None, self._input_size])
+        
 
         # initialize hidden and visible biases with 0
         cur_wDown = np.zeros([self._input_size, self._output_size], np.float32)
+        cur_wUp = np.zeros([self._input_size, self._output_size], np.float32)
         cur_vb = np.zeros([self._input_size], np.float32)
         cur_hb = np.zeros([self._output_size], np.float32)
 
-        prev_wUp = np.zeros([self._input_size, self._output_size], np.float32)
+        prev_wUp = self.wUp
         prev_wDown = np.zeros([self._input_size, self._output_size], np.float32)
         prev_vb = np.zeros([self._input_size], np.float32)
         prev_hb = np.zeros([self._output_size], np.float32)
@@ -100,6 +104,7 @@ class RBM2:
             tf.to_float(tf.shape(v0)[0])
         # update Weights and visible and hidden biases
         update_w = _wDown + alpha * CD
+        update_wUp = _wUp + alpha *np.multiply(CD, _multiplier) 
         update_vb = _vb + alpha * tf.reduce_mean(v0 - v1, 0)
         update_hb = _hb + alpha * tf.reduce_mean(h0 - h1, 0)
 
@@ -119,11 +124,14 @@ class RBM2:
                     # update weight and biases
                     cur_wDown = sess.run(update_w, feed_dict={
                         v0: batch, _wDown: prev_wDown, _wUp: prev_wUp, _vb: prev_vb, _hb: prev_hb})
+                    cur_wUp = sess.run(update_wUp, feed_dict={
+                        v0: batch, _wDown: prev_wDown, _wUp: prev_wUp, _vb: prev_vb, _hb: prev_hb, _multiplier: self.multiplier})    
                     cur_hb = sess.run(update_hb, feed_dict={
                         v0: batch, _wDown: prev_wDown, _wUp: prev_wUp, _vb: prev_vb, _hb: prev_hb})
                     cur_vb = sess.run(update_vb, feed_dict={
                         v0: batch, _wUp: prev_wUp,_wDown: prev_wDown, _vb: prev_vb, _hb: prev_hb})
                     prev_wDown = cur_wDown
+                    prev_wUp = cur_wUp
                     prev_hb = cur_hb
                     prev_vb = cur_vb
 
@@ -135,6 +143,7 @@ class RBM2:
                     print('Epoch: {}, reconstruction error: {}'.format(epoch, error))
 
                 self.wDown = prev_wDown
+                self.wUp = prev_wUp
                 self.hb = prev_hb
                 self.vb = prev_vb
 
@@ -146,6 +155,16 @@ class RBM2:
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             return sess.run(out)
+    
+    def insertKnowledge(self, ruleSet):
+        for i in range(len(ruleSet)):
+            for j in range(len(ruleSet[i].x)):
+                if ruleSet[i].x[j] == True:
+                    self.multiplier[j][i] = 0.0
+                    self.wUp[j][i] = ruleSet[i].c
+                elif ruleSet[i].x[j] == False:
+                    self.multiplier[j][i] = 0.0
+                    self.wUp[j][i] = -ruleSet[i].c
 
 def main():
     mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
