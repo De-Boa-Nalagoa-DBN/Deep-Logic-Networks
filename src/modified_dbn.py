@@ -52,6 +52,8 @@ class DBN(object):
             print('\n\nRBM {}: '.format(i))
             rbm.train(inpX)
             inpX = rbm.rbm_output(inpX)
+            rbm.save_weights(i)
+            rbm.save_biases(i)
 
         return rbm_list
 
