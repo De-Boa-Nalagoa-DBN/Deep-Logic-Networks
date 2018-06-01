@@ -3,7 +3,7 @@ import math
 import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
-from PIL import Image
+#from PIL import Image
 
 from utils import tile_raster_images
 
