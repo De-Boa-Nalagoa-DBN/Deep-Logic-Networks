@@ -17,19 +17,21 @@ def dbn_extract(dbn, compact = True):
     for i in range(len(dbn.w_list) -1):
         rbm = RBM2(dbn.w_list[i].shape[0], dbn.w_list[i].shape[1])
         rbm.load_weights(dbn.w_list[i])
-        rules_rbm = rbm_extract(rbm)
+        rules_rbm = rbm_extract(rbm.wUp)
         ruleSet.append(rules_rbm)
     
     if compact:
         rbm = RBM2(dbn.w_list[i].shape[0], dbn.w_list[i].shape[1])
         rbm.load_weights(dbn.w_list[-1])
-        rules_rbm = rbm_extract(rbm)
+        rules_rbm = rbm_extract(rbm.wUp)
         ruleSet.append(rules_rbm)
     else:
         rbm = RBM2(dbn.w_list[i].shape[0], dbn.w_list[i].shape[1])
         rbm.load_weights(dbn.w_list[-1])
         #rules_rbm = rbm_top_extract(rbm)
         #ruleSet.append(rules_rbm)
+    
+    return ruleSet
 
 def main():
     mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)

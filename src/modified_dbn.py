@@ -6,6 +6,7 @@ from rbm import RBM
 from utils import tile_raster_images
 from tensorflow.examples.tutorials.mnist import input_data
 from modified_rbm import RBM2
+# from extract_dbn import *
 
 
 class DBN(object):
@@ -185,8 +186,8 @@ def main():
     dbn.load_from_rbms([500, 200, 50], dbn.train_rbms())
     dbn.train()
     # TODO: FAZER ENCODE NA DBN
-
     # DEPOIS DISSO DEVE FAZER:
+    # ez
     # sizes = [len(knowledgeBase[i]) for i in len(knowledgeBase)]
     # dbn = DBN(sizes, trX, trY, epochs=15)
     # dbn.load_from_rbms2(sizes, dbn.ruleEncodingAlgorithm(knowledgeBase))
