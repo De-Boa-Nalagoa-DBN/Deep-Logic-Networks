@@ -27,9 +27,9 @@ class RBM2:
         self.wDown = weights
         self.wUp = weights
 
-    def load_weights(self, weightDown, weightUp):
-        self.wDown = weightDown
-        self.wUp = weightUp
+    # def load_weights(self, weightDown, weightUp):
+    #     self.wDown = weightDown
+    #     self.wUp = weightUp
 
     def load_biases(self, dir_vb, dir_hb):
         print("Loading visible biases from {} ...".format(dir_vb))
