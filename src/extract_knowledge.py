@@ -42,6 +42,19 @@ def rbm_extract(W):
                     r[j].remove_literal(i)
     return r
 
+def top_rbm_extract(W):
+    n_hidden = W.shape[0]
+    n_labels = W.shape[1]
+    rules = []
+
+    for i in range(n_labels):
+            for j in range(n_hidden):
+                r = Rule(i)
+                r.x = [None for _ in range(n_hidden)]
+                r.x[j] = True
+                r.c = np.exp(W[j][i])
+                rules.append(r)  
+    return rules    
 
 def main():
     print("Extract Knowledge")
