@@ -6,3 +6,7 @@
 *.aux
 *.fdb_latexmk
 *.pyc
+
+*.npy
+
+\.vscode/
