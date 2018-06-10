@@ -33,13 +33,13 @@ def rbm_extract(W):
             S[i][j] = np.sign(W[i][j])
             r[j].add_literal(W[i][j])
 
-        while cj != r[j].c:
-            r[j].c = cj
+        while get_condifence(W, S, j) != cj:
             cj = get_condifence(W, S, j)
             for i in range(n_visible):
                 if cj >= (2*np.absolute(W[i][j])) and S[i][j] != 0:
                     S[i][j] = 0
                     r[j].remove_literal(i)
+        r[j].c = cj
     return r
 
 
