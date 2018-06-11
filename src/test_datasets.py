@@ -17,7 +17,7 @@ def test_yale():
     for i in range(1, 16):
         filelist = glob.glob('./yale_dataset/subject'+str(i).zfill(2)+"*")
         for filename in filelist:
-            img = Image.open(filename)
+            img = Image.open(filename).convert('L')
             img = img.resize((28, 28))
             img = np.array(img, dtype=np.float32)
             img = np.reshape(img, [img.shape[0]*img.shape[1]])
