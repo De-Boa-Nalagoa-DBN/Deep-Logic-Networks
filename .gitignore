@@ -6,7 +6,9 @@
 *.aux
 *.fdb_latexmk
 *.pyc
-
+*.bbl
+*.blg
 *.npy
-
+.DS_Store
+.idea/
 \.vscode/
