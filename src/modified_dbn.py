@@ -137,11 +137,11 @@ class DBN(object):
                     tf.matmul(_in[i - 1], _w[i - 1]) + _b[i - 1])
 
         # Define cost function
-        cost = tf.reduce_mean(tf.square(_in[-1] - y))
+        #cost = tf.reduce_mean(tf.square(_in[-1] - y))
+        cost = tf.losses.softmax_cross_entropy(onehot_labels = y, logits = _in[-1])
 
         # Defining that we want to minimize the cost function throught Tensor Flow's momentum optimizer
-        train_op = tf.train.MomentumOptimizer(
-            self._learning_rate, self._momentum).minimize(cost)
+        train_op = tf.train.GradientDescentOptimizer(self._learning_rate).minimize(cost)
 
         # Prediction operation to fit later
         predict_op = tf.argmax(_in[-1], 1)
@@ -181,9 +181,14 @@ class DBN(object):
             _w[i] = tf.constant(self.w_list[i])
             _b[i] = tf.constant(self.b_list[i])
 
-        # Defining activation function
-        for i in range(1, len(self._sizes) + 2):
-            _in[i] = tf.nn.sigmoid(tf.matmul(_in[i - 1], _w[i - 1]) + _b[i - 1])
+        if self.with_rules:
+            # Defining activation function
+            for i in range(1, len(self._sizes) + 1):
+                _in[i] = tf.nn.sigmoid(tf.matmul(_in[i - 1], _w[i - 1]) + _b[i - 1])
+        else:
+            # Defining activation function
+            for i in range(1, len(self._sizes) + 2):
+                _in[i] = tf.nn.sigmoid(tf.matmul(_in[i - 1], _w[i - 1]) + _b[i - 1])
         
         # Prediction operation
         predict_op = tf.argmax(_in[-1], 1)
@@ -227,7 +232,7 @@ def main():
     trX, trY, teX, teY = mnist.train.images, mnist.train.labels, mnist.test.images,\
         mnist.test.labels
 
-    dbn = DBN([500, 200, 50], trX, trY, epochs=15)
+    dbn = DBN([500, 200, 50], trX, trY, epochs=50)
     dbn.load_from_rbms([500, 200, 50], dbn.train_rbms())
     dbn.train()
     # TODO: FAZER ENCODE NA DBN

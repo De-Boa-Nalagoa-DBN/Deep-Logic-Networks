@@ -1,7 +1,25 @@
-# from extract_knowledge import *
+import numpy as np
+from rbm import RBM
+from rule import Rule
+from modified_rbm import RBM2
+import tensorflow as tf
+from utils import tile_raster_images
+from tensorflow.examples.tutorials.mnist import input_data
+from extract_knowledge import rbm_extract
+from modified_dbn import DBN as DBN2
+import extract_dbn
 
-# def main():
+mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+trX, trY, teX, teY = mnist.train.images, mnist.train.labels, mnist.test.images,\
+        mnist.test.labels
 
+dbn = DBN2([500, 1000], trX, trY, epochs=500)
+dbn.load_from_rbms([500, 1000], dbn.train_rbms())
+dbn.train()
 
-# if __name__ == '__main__':
-#     main()
+knowledgeBase = extract_dbn.dbn_extract(dbn)
+
+sizes = [len(knowledgeBase[i]) for i in range(len(knowledgeBase))]
+dbn = DBN2(sizes, trX, trY, epochs=500)
+dbn.load_from_rbms2(sizes, dbn.ruleEncodingAlgorithm(knowledgeBase))
+dbn.train()

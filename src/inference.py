@@ -14,8 +14,8 @@ def quantitativeInference(ruleSet, input_data):
         alfas = [inf1(r, current_data) for r in rules]
         alfas = np.asarray(alfas)
         # print(alfas.shape)
-        alfas = alfas / np.max(alfas)
-        # alfas = alfas / np.linalg.norm(alfas, ord=np.inf, axis=0, keepdims=True)
+        #alfas = alfas / np.max(alfas)
+        alfas = alfas / np.linalg.norm(alfas, ord=np.inf, axis=0, keepdims=True)
         current_data = alfas
 
     return current_data
