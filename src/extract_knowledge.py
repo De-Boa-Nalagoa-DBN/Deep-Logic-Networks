@@ -1,7 +1,7 @@
 import numpy as np
 from rbm import RBM
 from rule import Rule
-from modified_rbm import RBM2
+# from modified_rbm import RBM2
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from utils import tile_raster_images
@@ -33,13 +33,13 @@ def rbm_extract(W):
             S[i][j] = np.sign(W[i][j])
             r[j].add_literal(W[i][j])
 
-        while cj != r[j].c:
-            r[j].c = cj
+        while get_condifence(W, S, j) != cj:
             cj = get_condifence(W, S, j)
             for i in range(n_visible):
                 if cj >= (2*np.absolute(W[i][j])) and S[i][j] != 0:
                     S[i][j] = 0
                     r[j].remove_literal(i)
+        r[j].c = cj
     return r
 
 def top_rbm_extract(W):
@@ -58,40 +58,40 @@ def top_rbm_extract(W):
 
 def main():
     print("Extract Knowledge")
-    W = np.load("trained/rbm_weights.npy")
-    rules_rbm = rbm_extract(W)
-    rbm = RBM2(len(rules_rbm[0].x), len(rules_rbm))
-    print("Inserting Knowledge")
-    rbm.insertKnowledge(rules_rbm)
+    # W = np.load("trained/rbm_weights.npy")
+    # rules_rbm = rbm_extract(W)
+    # rbm = RBM2(len(rules_rbm[0].x), len(rules_rbm))
+    # print("Inserting Knowledge")
+    # rbm.insertKnowledge(rules_rbm)
 
-    mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
-    trX, trY, teX, teY = mnist.train.images, mnist.train.labels, mnist.test.images,\
-        mnist.test.labels
-    print("learning with guidance")
-    rbm.train(trX, debug=True)
+    # mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+    # trX, trY, teX, teY = mnist.train.images, mnist.train.labels, mnist.test.images,\
+    #     mnist.test.labels
+    # print("learning with guidance")
+    # rbm.train(trX, debug=True)
     
-    # Saving weights and biases
-    rbm.save_weights()
-    rbm.save_biases()
+    # # Saving weights and biases
+    # rbm.save_weights()
+    # rbm.save_biases()
 
-    with open('rbm_rules','w') as rules_file:
-        for r in rules_rbm:
-            rules_file.write("{} : {} <-> {}\n".format(r.c, r.h, r.x))
-        rules_file.close()
+    # with open('rbm_rules','w') as rules_file:
+    #     for r in rules_rbm:
+    #         rules_file.write("{} : {} <-> {}\n".format(r.c, r.h, r.x))
+    #     rules_file.close()
     
-        out = rbm.rbm_output(trX[1:2], debug=True)
+    #     out = rbm.rbm_output(trX[1:2], debug=True)
 
 
-    v1 = rbm.backward_pass(out, rbm.wDown, rbm.vb)
-    with tf.Session() as sess:
-        feed = sess.run(out)
-        out = sess.run(v1, feed_dict={out: feed})
-    img = Image.fromarray(tile_raster_images(X=out, img_shape=(
-        28, 28), tile_shape=(1, 1), tile_spacing=(1, 1)))
-    plt.rcParams['figure.figsize'] = (2.0, 2.0)
-    imgplot = plt.imshow(img)
-    imgplot.set_cmap('gray')
-    plt.show()
+    # v1 = rbm.backward_pass(out, rbm.wDown, rbm.vb)
+    # with tf.Session() as sess:
+    #     feed = sess.run(out)
+    #     out = sess.run(v1, feed_dict={out: feed})
+    # img = Image.fromarray(tile_raster_images(X=out, img_shape=(
+    #     28, 28), tile_shape=(1, 1), tile_spacing=(1, 1)))
+    # plt.rcParams['figure.figsize'] = (2.0, 2.0)
+    # imgplot = plt.imshow(img)
+    # imgplot.set_cmap('gray')
+    # plt.show()
 
 
 if __name__ == "__main__":
