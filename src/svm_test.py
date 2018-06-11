@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score
 from tensorflow.examples.tutorials.mnist import input_data
 
 import extract_knowledge
+from inference import quantitativeInference
 from rbm import RBM
 
 
@@ -16,49 +17,57 @@ def main():
     rbm = RBM(trX.shape[1], 500)
     rbm.train(trX, debug=False)
     outputs = []
-    for i in range(200):
-        out = rbm.rbm_output(trX[i:i+1], True)
-        v1 = rbm.backward_pass(out, rbm.w, rbm.vb)
-        with tf.Session() as sess:
-            feed = sess.run(out)
-            out = sess.run(v1, feed_dict={out: feed})
-        outputs.append(out[0])
+    how_many = 10000
 
-    outputs = np.asarray(outputs)
-
-
+    input_ = tf.placeholder("float", [None, rbm._input_size])
+    w_ = tf.placeholder("float", [rbm._input_size, rbm._output_size])
+    hb_ = tf.placeholder("float", [rbm._output_size])
+    with tf.Session() as sess:
+        outputs = sess.run(rbm.foward_pass(input_, w_, hb_), feed_dict={
+            input_: trX, w_: rbm.w, hb_: rbm.hb})
+        outputs_test = sess.run(rbm.foward_pass(input_, w_, hb_), feed_dict={
+            input_: teX, w_: rbm.w, hb_: rbm.hb})
 
     rules_rbm = extract_knowledge.rbm_extract(rbm.w)
-    confidence_values = [x.c for x in rules_rbm]
-    confidence_values = np.asarray(
-        confidence_values).reshape(len(confidence_values), 1)
-    rbm_conf = rbm
-    rbm_conf.hb = confidence_values
+    print('Aqui1')
+    newTrX = [quantitativeInference([rules_rbm], x) for x in trX]
+    print('Aqui2')
+    newTeX = [quantitativeInference([rules_rbm], x) for x in teX]
+    print('Aqui3')
 
-    # rbm.rbm_output(teX)
-    svm_rbm = svm.SVC()
+    # svm_rbm = svm.SVC()
+    # y = []
+    # for x in trY:
+    #     for i, l in enumerate(x):
+    #         if l == 1:
+    #             y.append(i)
+    # svm_rbm.fit(outputs, y)
+    # print("Fitou")
+    # classi = svm_rbm.predict(outputs_test)
+    # print(classi)
+    # som = 0
+    # for i,x in enumerate(teY):
+    #     x = [j for j in range(len(x)) if x[j]==1]
+    #     if x[0] == classi[i]:
+    #         som+= 1
+    # print(som/how_many)
+
+    svm_inf = svm.SVC()
     y = []
-    for x in trY[:200]:
+    for x in trY:
         for i, l in enumerate(x):
             if l == 1:
                 y.append(i)
-    svm_rbm.fit(outputs, y)
-    classi = svm_rbm.predict(teX[:200])
-    print(classi)
-    print(teY[:10])
+    svm_inf.fit(newTrX, y)
+    print('Fitou')
+    classi = svm_inf.predict(newTeX)
     som = 0
-    for i,x in enumerate(teY[:200]):
-        x = [j for j in range(len(x)) if x[j]==1]
+    for i, x in enumerate(teY):
+        x = [j for j in range(len(x)) if x[j] == 1]
         if x[0] == classi[i]:
-            som+= 1
-    print(som/200)
-    # svm_confidence = svm.SVC()
+            som += 1
 
-    # svm_rbm.fit(rbm.hb, trY)
-    # svm_confidence.fit(confidence_values, trY)
-    # acc_rbm = accuracy_score(teY,svm_rbm.predict(teX))
-    # acc_confidence = accuracy_score(teY,svm_confidence.predict(teX))
-    # print(acc_rbm, acc_confidence)
+    print("Final accuracy:", som/how_many)
 
 
 if __name__ == '__main__':
