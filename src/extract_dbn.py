@@ -38,7 +38,7 @@ def main():
     dbn = DBN2([500, 200, 50], trX, trY, epochs=15)
     dbn.load_from_rbms([500, 200, 50], dbn.train_rbms())
     dbn.train()
-    ruleSet = dbn_extract(dbn, compact=False)
+    ruleSet = dbn_extract(dbn, compact=True)
 
     with open('rbm_rules','w') as rules_file:
         for i in range(len(ruleSet)):

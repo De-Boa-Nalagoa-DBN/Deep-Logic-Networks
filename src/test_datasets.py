@@ -66,7 +66,7 @@ def test_yale(with_rules=False, hidden_units=500, n_test=1):
     accs = []
     wr_str = str(with_rules)
     hu_str = str(hidden_units)
-    filename = "yale_" + wr_str + "_" + hu_str + ".npy"
+    filename_ = "yale_" + wr_str + "_" + hu_str + ".npy"
 
     # Preparing dataset
     for i in range(1, 16):
@@ -118,11 +118,20 @@ def test_yale(with_rules=False, hidden_units=500, n_test=1):
 
         # Saving accuracy values
         accs_np = np.asarray(accs)
-        np.save(filename, accs_np)
+        np.save(filename_, accs_np)
 
 def main():
-    # test_yale()
-    test_mnist(with_rules=True)
+    # Testing mnist
+    test_mnist(with_rules=False, hidden_units=500, n_test=1)
+    test_mnist(with_rules=False, hidden_units=1000, n_test=1)
+    test_mnist(with_rules=True, hidden_units=500, n_test=1)
+    test_mnist(with_rules=True, hidden_units=1000, n_test=1)
+
+    # # Testing yale
+    test_yale(with_rules=False, hidden_units=500, n_test=1)
+    test_yale(with_rules=False, hidden_units=1000, n_test=1)
+    test_yale(with_rules=True, hidden_units=500, n_test=1)
+    test_yale(with_rules=True, hidden_units=1000, n_test=1)
 
 if __name__ == '__main__':
     main()
