@@ -88,7 +88,7 @@ def test_yale(with_rules=False, hidden_units=500, n_test=1):
             dataset, labels, test_size=31, random_state=42, stratify=labels)
 
         print("\n--------- TEST {} WITH{} RULES---------\n".format(t, "" if with_rules==True else "OUT"))
-        rbm = RBM(X_train.shape[1], with_rules)
+        rbm = RBM(X_train.shape[1], hidden_units)
         rbm.train(dataset, debug=True, epochs=500, batchsize=11, learning_rate=0.1)
         print("!!! RBM trained !!!")
 
