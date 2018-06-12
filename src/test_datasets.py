@@ -95,8 +95,8 @@ def test_yale(with_rules=False, hidden_units=500, n_test=1):
         if with_rules:
             rules_rbm = extract_knowledge.rbm_extract(rbm.w)
             print("Calculating beliefs...")
-            new_trX = [quantitativeInference([rules_rbm], x) for x in trX]
-            new_teX = [quantitativeInference([rules_rbm], x) for x in teX]
+            new_trX = [quantitativeInference([rules_rbm], x) for x in X_train]
+            new_teX = [quantitativeInference([rules_rbm], x) for x in X_test]
         else:
             input_ = tf.placeholder("float", [None, rbm._input_size])
             w_ = tf.placeholder("float", [rbm._input_size, rbm._output_size])
