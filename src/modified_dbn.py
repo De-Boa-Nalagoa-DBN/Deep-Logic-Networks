@@ -1,20 +1,26 @@
 import math
+import os
+
 import numpy as np
 import tensorflow as tf
 from PIL import Image
+from tensorflow.examples.tutorials.mnist import input_data
+
+from modified_rbm import RBM2
 from rbm import RBM
 from utils import tile_raster_images
-from tensorflow.examples.tutorials.mnist import input_data
-from modified_rbm import RBM2
+
 # from extract_dbn import *
 
 
 class DBN(object):
 
-    def __init__(self, sizes, X, Y, epochs=10, batch_size=100, learning_rate=1.0, momentum=0.0, with_rules=False):
+    def __init__(self, sizes, X, Y, teX, teY, epochs=10, batch_size=100, learning_rate=1.0, momentum=0.0, with_rules=False):
         self._sizes = sizes
         self._X = X
         self._Y = Y
+        self._teX = teX
+        self._teY = teY
         # Creates weights and biases
         self.w_list = list()
         self.b_list = list()
@@ -25,7 +31,6 @@ class DBN(object):
         self._batch_size = batch_size
         self.with_rules = with_rules
         input_size = X.shape[1]
-
 
         if self.with_rules:
             # initializing
@@ -67,10 +72,14 @@ class DBN(object):
         # for each RBM in our RBM's list
         for i, rbm in enumerate(rbm_list):
             print('\n\nRBM {}: '.format(i))
-            rbm.train(inpX)
-            inpX = rbm.rbm_output(inpX)
-            rbm.save_weights(i)
-            rbm.save_biases(i)
+            if(not 'rbm_vb_'+str(i)+'.npy' in os.listdir('./trained')):
+                rbm.train(inpX)
+                inpX = rbm.rbm_output(inpX)
+                rbm.save_weights(i)
+                rbm.save_biases(i)
+            else:
+                rbm.load_biases('./trained/rbm_vb_'+str(i)+'.npy', 'trained/rbm_hb_'+str(i)+'.npy')
+                rbm.load_weights('./trained/rbm_weights_'+str(i)+'.npy')
 
         return rbm_list
 
@@ -137,11 +146,12 @@ class DBN(object):
                     tf.matmul(_in[i - 1], _w[i - 1]) + _b[i - 1])
 
         # Define cost function
-        #cost = tf.reduce_mean(tf.square(_in[-1] - y))
+        # cost = tf.reduce_mean(tf.square(_in[-1] - y))
         cost = tf.losses.softmax_cross_entropy(onehot_labels = y, logits = _in[-1])
 
         # Defining that we want to minimize the cost function throught Tensor Flow's momentum optimizer
-        train_op = tf.train.GradientDescentOptimizer(self._learning_rate).minimize(cost)
+        train_op = tf.train.GradientDescentOptimizer(
+            self._learning_rate).minimize(cost)
 
         # Prediction operation to fit later
         predict_op = tf.argmax(_in[-1], 1)
@@ -166,8 +176,8 @@ class DBN(object):
                         self.w_list[j] = sess.run(_w[j])
                         self.b_list[j] = sess.run(_b[j])
 
-                print("Accuracy rating for epoch " + str(i) + ": " + str(np.mean(np.argmax(self._Y, axis=1) ==
-                                                                                 sess.run(predict_op, feed_dict={_in[0]: self._X, y: self._Y}))))
+                print("Accuracy rating for epoch " + str(i) + ": " + str(np.mean(np.argmax(self._teY, axis=1) ==
+                                                                                 sess.run(predict_op, feed_dict={_in[0]: self._teX, y: self._teY}))))
 
     def predict(self, X):
         # Create placeholders for input, weeights, biases and output
@@ -175,7 +185,7 @@ class DBN(object):
         _w = [None] * len(self.w_list)
         _b = [None] * len(self.b_list)
         _in[0] = tf.placeholder("float", [None, self._X.shape[1]])
-        
+
         # Initializing variables
         for i in range(len(self.w_list)):
             _w[i] = tf.constant(self.w_list[i])
@@ -184,12 +194,14 @@ class DBN(object):
         if self.with_rules:
             # Defining activation function
             for i in range(1, len(self._sizes) + 1):
-                _in[i] = tf.nn.sigmoid(tf.matmul(_in[i - 1], _w[i - 1]) + _b[i - 1])
+                _in[i] = tf.nn.sigmoid(
+                    tf.matmul(_in[i - 1], _w[i - 1]) + _b[i - 1])
         else:
             # Defining activation function
             for i in range(1, len(self._sizes) + 2):
-                _in[i] = tf.nn.sigmoid(tf.matmul(_in[i - 1], _w[i - 1]) + _b[i - 1])
-        
+                _in[i] = tf.nn.sigmoid(
+                    tf.matmul(_in[i - 1], _w[i - 1]) + _b[i - 1])
+
         # Prediction operation
         predict_op = tf.argmax(_in[-1], 1)
 
@@ -224,27 +236,25 @@ class DBN(object):
         return rbm_list
 
 
-
-
 def main():
     # Loading in the mnist data
     mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
     trX, trY, teX, teY = mnist.train.images, mnist.train.labels, mnist.test.images,\
         mnist.test.labels
 
-    dbn = DBN([500, 200, 50], trX, trY, epochs=50)
-    dbn.load_from_rbms([500, 200, 50], dbn.train_rbms())
-    dbn.train()
-    # TODO: FAZER ENCODE NA DBN
-    # DEPOIS DISSO DEVE FAZER:
-    # ez
-    # sizes = [len(knowledgeBase[i]) for i in len(knowledgeBase)]
-    # dbn = DBN(sizes, trX, trY, epochs=15)
-    # dbn.load_from_rbms2(sizes, dbn.ruleEncodingAlgorithm(knowledgeBase))
+    # dbn = DBN([500, 200, 50], trX, trY, epochs=50)
+    # dbn.load_from_rbms([500, 200, 50], dbn.train_rbms())
     # dbn.train()
+    # # TODO: FAZER ENCODE NA DBN
+    # # DEPOIS DISSO DEVE FAZER:
+    # # ez
+    # # sizes = [len(knowledgeBase[i]) for i in len(knowledgeBase)]
+    # # dbn = DBN(sizes, trX, trY, epochs=15)
+    # # dbn.load_from_rbms2(sizes, dbn.ruleEncodingAlgorithm(knowledgeBase))
+    # # dbn.train()
 
-    print("Prediction for Mnist dataset with DBN without learning extraction and insertion:",
-          np.mean(np.argmax(teY, axis=1) == dbn.predict(teX)))
+    # print("Prediction for Mnist dataset with DBN without learning extraction and insertion:",
+    #       np.mean(np.argmax(teY, axis=1) == dbn.predict(teX)))
 
 
 if __name__ == '__main__':

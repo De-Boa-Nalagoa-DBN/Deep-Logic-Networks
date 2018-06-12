@@ -29,21 +29,3 @@ def dbn_extract(dbn, compact = True):
         rules_rbm = top_rbm_extract(dbn.w_list[-1])
         ruleSet.append(rules_rbm)
     return ruleSet
-
-def main():
-    mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
-    trX, trY, teX, teY = mnist.train.images, mnist.train.labels, mnist.test.images,\
-        mnist.test.labels
-
-    dbn = DBN2([500, 200, 50], trX, trY, epochs=15)
-    dbn.load_from_rbms([500, 200, 50], dbn.train_rbms())
-    dbn.train()
-    ruleSet = dbn_extract(dbn, compact=True)
-
-    with open('rbm_rules','w') as rules_file:
-        for i in range(len(ruleSet)):
-            for r in ruleSet[i]:
-                rules_file.write("{}, {} : {} <-> {}\n".format(i, r.c, r.h, r.x))
-        rules_file.close()
-if __name__ == '__main__':
-    main()
