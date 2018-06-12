@@ -22,6 +22,9 @@ def test_mnist(with_rules=False, one_hot=False, hidden_units=500, n_test=1):
     how_many = 10000
     num_classes = 10
     accs = []
+    wr_str = str(with_rules)
+    hu_str = str(hidden_units)
+    filename = "mnist_" + wr_str + "_" + hu_str + ".npy"
 
     for t in range(n_test):
         print("\n--------- TEST {} WITH{} RULES---------\n".format(t, "" if with_rules==True else "OUT"))
@@ -55,12 +58,15 @@ def test_mnist(with_rules=False, one_hot=False, hidden_units=500, n_test=1):
 
         # Saving accuracy values
         accs_np = np.asarray(accs)
-        np.save("mnist_accuracy.npy", accs_np)
+        np.save(filename, accs_np)
 
 def test_yale(with_rules=False, hidden_units=500, n_test=1):
     dataset = []
     labels = []
     accs = []
+    wr_str = str(with_rules)
+    hu_str = str(hidden_units)
+    filename = "yale_" + wr_str + "_" + hu_str + ".npy"
 
     # Preparing dataset
     for i in range(1, 16):
@@ -112,7 +118,7 @@ def test_yale(with_rules=False, hidden_units=500, n_test=1):
 
         # Saving accuracy values
         accs_np = np.asarray(accs)
-        np.save("yale_accuracy.npy", accs_np)
+        np.save(filename, accs_np)
 
 def main():
     # test_yale()
