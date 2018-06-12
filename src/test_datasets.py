@@ -73,7 +73,7 @@ def test_yale(with_rules=False, hidden_units=500, n_test=1):
         filelist = glob.glob('./yale_dataset/subject'+str(i).zfill(2)+"*")
         for filename in filelist:
             img = Image.open(filename).convert('L')
-            img = img.resize((132, 132))
+            img = img.resize((28, 28))
             img = np.array(img, dtype=np.float32)
             img = np.reshape(img, [img.shape[0]*img.shape[1]])
             img = img / 255.
@@ -85,11 +85,11 @@ def test_yale(with_rules=False, hidden_units=500, n_test=1):
 
     for t in range(n_test):
         X_train, X_test, y_train, y_test = train_test_split(
-            dataset, labels, test_size=31, random_state=42, stratify=labels)
+            dataset, labels, test_size=31, stratify=labels)
 
         print("\n--------- TEST {} WITH{} RULES---------\n".format(t, "" if with_rules==True else "OUT"))
-        rbm = RBM(X_train.shape[1], with_rules)
-        rbm.train(dataset, debug=True, epochs=500, batchsize=11, learning_rate=0.1)
+        rbm = RBM(X_train.shape[1], hidden_units)
+        rbm.train(dataset, debug=True, epochs=500, batchsize=40, learning_rate=0.1)
         print("!!! RBM trained !!!")
 
         if with_rules:
